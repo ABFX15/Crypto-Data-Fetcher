@@ -1,8 +1,12 @@
 from django.db import models
 from django.utils import timezone 
+from django.contrib.auth.models import User 
 # Create your models here.
 
 class CryptoPrice(models.Model):
+    def __str__(self):
+        return f"{self.crypto_id} - {self.date} - {self.price_usd}"
+    
     crypto_id = models.CharField(max_length=100)
     date = models.DateTimeField()
     price_usd = models.FloatField()
@@ -18,6 +22,25 @@ class CryptoPrice(models.Model):
         
     def __str__(self):
         return f"{self.crypto_id} - {self.date} - {self.price_usd}"
+    
+class UserPreferences(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    crypto_ids = models.JSONField(default=list)
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.crypto_ids}"
+
+class Watchlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    crypto = models.ForeignKey('CryptoMetaData', on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'crypto')
+        
+    def __str__(self):
+        return f"{self.user.username} - {self.crypto.name} ({self.crypto.symbol})"
 
 class CryptoMetaData(models.Model):
     crypto_id = models.CharField(max_length=100)

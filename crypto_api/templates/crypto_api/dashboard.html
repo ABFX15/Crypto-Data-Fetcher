@@ -1,0 +1,203 @@
+{% extends "admin/base_site.html" %} {% load static %} {% block extrastyle %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+/>
+<style>
+  .dashboard-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+  }
+  .chart-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .crypto-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .price-up {
+    color: #28a745;
+  }
+  .price-down {
+    color: #dc3545;
+  }
+  .refresh-button {
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Crypto Dashboard</h1>
+    <button class="btn btn-primary refresh-button" onclick="refreshData()">
+      Refresh Data
+    </button>
+  </div>
+
+  <div class="row">
+    <!-- Price Chart -->
+    <div class="col-md-8">
+      <div class="chart-container">
+        <h3>Price History</h3>
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Market Cap Chart -->
+    <div class="col-md-4">
+      <div class="chart-container">
+        <h3>Market Cap Distribution</h3>
+        <canvas id="marketCapChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <!-- Trending Cryptocurrencies -->
+    <div class="col-md-6">
+      <div class="chart-container">
+        <h3>Trending Cryptocurrencies</h3>
+        <div id="trendingList">
+          {% for crypto in trending_cryptos %}
+          <div class="crypto-card">
+            <h5>{{ crypto.name }}</h5>
+            <p>Symbol: {{ crypto.symbol }}</p>
+            <p>Market Cap Rank: {{ crypto.market_cap_rank }}</p>
+            <p>Score: {{ crypto.score }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Latest Prices -->
+    <div class="col-md-6">
+      <div class="chart-container">
+        <h3>Latest Prices</h3>
+        <div id="latestPrices">
+          {% for price in latest_prices %}
+          <div class="crypto-card">
+            <h5>{{ price.crypto_id }}</h5>
+            <p>Price: ${{ price.price_usd }}</p>
+            <p>Market Cap: ${{ price.market_cap_usd }}</p>
+            <p>Volume (24h): ${{ price.volume_24h_usd }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Initialize charts
+  let priceChart, marketCapChart;
+
+  function initCharts() {
+    // Price Chart
+    const priceCtx = document.getElementById("priceChart").getContext("2d");
+    priceChart = new Chart(priceCtx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Price (USD)",
+            data: [],
+            borderColor: "rgb(75, 192, 192)",
+            tension: 0.1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: false,
+          },
+        },
+      },
+    });
+
+    // Market Cap Chart
+    const marketCapCtx = document
+      .getElementById("marketCapChart")
+      .getContext("2d");
+    marketCapChart = new Chart(marketCapCtx, {
+      type: "doughnut",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            data: [],
+            backgroundColor: [
+              "rgb(255, 99, 132)",
+              "rgb(54, 162, 235)",
+              "rgb(255, 205, 86)",
+              "rgb(75, 192, 192)",
+              "rgb(153, 102, 255)",
+            ],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+      },
+    });
+  }
+
+  // Fetch and update data
+  async function fetchData() {
+    try {
+      const response = await fetch("/api/prices/");
+      const data = await response.json();
+      updateCharts(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
+
+  function updateCharts(data) {
+    // Update price chart
+    const prices = data.map((item) => ({
+      date: new Date(item.date).toLocaleDateString(),
+      price: item.price_usd,
+    }));
+
+    priceChart.data.labels = prices.map((p) => p.date);
+    priceChart.data.datasets[0].data = prices.map((p) => p.price);
+    priceChart.update();
+
+    // Update market cap chart
+    const marketCaps = data.reduce((acc, item) => {
+      acc[item.crypto_id] = (acc[item.crypto_id] || 0) + item.market_cap_usd;
+      return acc;
+    }, {});
+
+    marketCapChart.data.labels = Object.keys(marketCaps);
+    marketCapChart.data.datasets[0].data = Object.values(marketCaps);
+    marketCapChart.update();
+  }
+
+  // Refresh data
+  function refreshData() {
+    fetchData();
+  }
+
+  // Initialize charts and fetch initial data
+  document.addEventListener("DOMContentLoaded", () => {
+    initCharts();
+    fetchData();
+    // Set up periodic refresh every 5 minutes
+    setInterval(fetchData, 300000);
+  });
+</script>
+{% endblock %}
