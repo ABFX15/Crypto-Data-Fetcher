@@ -1,7 +1,5 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django_filters.rest_framework import DjangoFilterBackend 
 from rest_framework.filters import SearchFilter
@@ -37,7 +35,7 @@ class TrendingCryptoViewSet(viewsets.ModelViewSet):
     ordering_fields = ['market_cap_rank', 'score']
     ordering = ['-score']
     
-class DashboardView(LoginRequiredMixin, TemplateView):
+class DashboardView(TemplateView):
     template_name = 'crypto_api/dashboard.html'
 
     def get_context_data(self, **kwargs):

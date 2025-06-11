@@ -33,63 +33,69 @@
   }
 </style>
 {% endblock %} {% block content %}
-<div class="dashboard-container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Crypto Dashboard</h1>
-    <button class="btn btn-primary refresh-button" onclick="refreshData()">
-      Refresh Data
-    </button>
-  </div>
-
+<div class="container mt-4">
   <div class="row">
-    <!-- Price Chart -->
-    <div class="col-md-8">
-      <div class="chart-container">
-        <h3>Price History</h3>
-        <canvas id="priceChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Market Cap Chart -->
-    <div class="col-md-4">
-      <div class="chart-container">
-        <h3>Market Cap Distribution</h3>
-        <canvas id="marketCapChart"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <div class="row mt-4">
     <!-- Trending Cryptocurrencies -->
-    <div class="col-md-6">
-      <div class="chart-container">
-        <h3>Trending Cryptocurrencies</h3>
-        <div id="trendingList">
-          {% for crypto in trending_cryptos %}
-          <div class="crypto-card">
-            <h5>{{ crypto.name }}</h5>
-            <p>Symbol: {{ crypto.symbol }}</p>
-            <p>Market Cap Rank: {{ crypto.market_cap_rank }}</p>
-            <p>Score: {{ crypto.score }}</p>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5>Trending Cryptocurrencies</h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            {% for crypto in trending_cryptos %}
+            <div class="list-group-item">
+              <h6 class="mb-1">{{ crypto.name }} ({{ crypto.symbol }})</h6>
+              <small
+                >Rank: {{ crypto.market_cap_rank }} | Score: {{ crypto.score
+                }}</small
+              >
+            </div>
+            {% empty %}
+            <p class="text-muted">No trending data available</p>
+            {% endfor %}
           </div>
-          {% endfor %}
         </div>
       </div>
     </div>
 
     <!-- Latest Prices -->
-    <div class="col-md-6">
-      <div class="chart-container">
-        <h3>Latest Prices</h3>
-        <div id="latestPrices">
-          {% for price in latest_prices %}
-          <div class="crypto-card">
-            <h5>{{ price.crypto_id }}</h5>
-            <p>Price: ${{ price.price_usd }}</p>
-            <p>Market Cap: ${{ price.market_cap_usd }}</p>
-            <p>Volume (24h): ${{ price.volume_24h_usd }}</p>
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5>Latest Prices</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Crypto</th>
+                  <th>Price (USD)</th>
+                  <th>Market Cap</th>
+                  <th>Volume (24h)</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for price in latest_prices %}
+                <tr>
+                  <td>{{ price.crypto_id }}</td>
+                  <td>${{ price.price_usd|floatformat:2 }}</td>
+                  <td>${{ price.market_cap_usd|floatformat:2 }}</td>
+                  <td>${{ price.volume_24h_usd|floatformat:2 }}</td>
+                  <td>{{ price.date|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center">
+                    No price data available
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
-          {% endfor %}
         </div>
       </div>
     </div>

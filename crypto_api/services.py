@@ -39,25 +39,25 @@ class CryptoDataService:
         except Exception as e:
             print(f"Error updating crypto data: {e}")
             return False 
-        
-        @staticmethod 
-        def update_trending_data():
-            try:
-                trending_data = fetch_trending()
-                if not trending_data:
-                    raise ValueError("No trending data found")
-                
-                for coin in trending_data:
-                    TrendingCrypto.objects.update_or_create(
-                        crypto_id=coin['id'],
-                        defaults={
-                            'name': coin['name'],
-                            'symbol': coin['symbol'],
-                            'market_cap_rank': coin['market_cap_rank'],
-                            'score': coin['score']
-                        }
-                    )
-                return True
-            except Exception as e:
-                print(f"Error updating trending data: {e}")
-                return False 
+    
+    @staticmethod 
+    def update_trending_data():
+        try:
+            trending_data = fetch_trending()
+            if not trending_data:
+                raise ValueError("No trending data found")
+            
+            for coin in trending_data:
+                TrendingCrypto.objects.update_or_create(
+                    crypto_id=coin['id'],
+                    defaults={
+                        'name': coin['name'],
+                        'symbol': coin['symbol'],
+                        'market_cap_rank': coin['market_cap_rank'],
+                        'score': coin['score']
+                    }
+                )
+            return True
+        except Exception as e:
+            print(f"Error updating trending data: {e}")
+            return False 

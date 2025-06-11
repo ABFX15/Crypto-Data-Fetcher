@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone 
 from django.contrib.auth.models import User 
+
 # Create your models here.
 
 class CryptoPrice(models.Model):
@@ -19,10 +20,7 @@ class CryptoPrice(models.Model):
         indexes = [
             models.Index(fields=['crypto_id', 'date']),
         ]
-        
-    def __str__(self):
-        return f"{self.crypto_id} - {self.date} - {self.price_usd}"
-    
+
 class UserPreferences(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     crypto_ids = models.JSONField(default=list)
