@@ -4,9 +4,21 @@ Fetching data for crypto assets
 import json 
 import requests 
 from datetime import datetime
+import logging
 
 
-def fetch_crypto(crypto_id, date):
+def fetch_crypto(crypto_id: str, date: str) -> dict:
+    '''
+    Fetches historical price data for a given cryptocurrency on a specific date.
+    
+    Args: 
+        crypto_id (str): The coingecko ID for the cryptocurrency
+        date (str): The date in the format 'dd-mm-yyyy' for which to fetch the data
+    
+    Returns:
+        dict: Contains price, market cap and volume data 
+        None: If request fails
+    '''
     url = f"https://api.coingecko.com/api/v3/coins/{crypto_id}/history"
     params = {
         "date": date
@@ -14,7 +26,7 @@ def fetch_crypto(crypto_id, date):
     headers = {"accept": "application/json"}
 
     try:
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
         
@@ -32,7 +44,7 @@ def fetch_crypto(crypto_id, date):
         }
         return price_data
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching data: {e}")
+        logging.error(f"Error fetching data: {e}")
         return None 
 
 
@@ -60,7 +72,7 @@ def fetch_crypto_metadata(crypto_id):
         }
         return metadata
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching metadata: {e}")
+        logging.error(f"Error fetching metadata: {e}")
         return None 
 
 def fetch_trending():
@@ -85,5 +97,5 @@ def fetch_trending():
             trending_coins.append(coin_data)
         return trending_coins
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching trending data: {e}")
+        logging.error(f"Error fetching trending data: {e}")
         return None 
